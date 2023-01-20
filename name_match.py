@@ -36,13 +36,13 @@ threshold = 10
 # Max name 1000000
 max_num = 1000000
 
-for i in range(0, int(max_num / 4)):
+for i in range(int(2*max_num / 4), int(3*max_num / 4)):
     extracted_name = node_name_arr[i]
     val = process.extractOne(extracted_name, name_map[extracted_name[0]])
     name = val[0]
     match_num = val[1]
     
-    with open('match.csv', 'a') as f:
+    with open('match.csv', 'a', newline='', encoding='UTF-8') as f:
         writer = csv.DictWriter(f, fieldnames=header)
         writer.writerow({'NameBirth': name, 'matchnum': match_num})
 
