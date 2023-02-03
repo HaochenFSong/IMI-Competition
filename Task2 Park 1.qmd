@@ -66,6 +66,16 @@ da <- dp[1:10] |>
 
 age_calc(dp['BIRTH_DT'][1,],today, units = "years")
 ```
+Train test split:
+
+```{r}
+test <- sample(c(TRUE,FALSE), nrow(dp),rep=TRUE) 
+train <- (!test)
+train <-dp[train,]
+test <- dp[test,]
+```
+
+
 and we can run a first test model
 ```{r}
 library("nnet")
@@ -79,19 +89,16 @@ model1 <-multinom(RISK~OCPTN_NM +
                WIRES_CNT_IN +
                WIRES_SUM_OUT +
                COUNTRY_RISK_INCOME+
-               COUNTRY_RISK_RESIDENCY, data = dp)
+               COUNTRY_RISK_RESIDENCY, data = train)
 summary(model1)
 ```
 
 do a quick test accuracy test:
 ```{r}
-test <- sample(c(TRUE,FALSE), nrow(dp),rep=TRUE) 
-test <- dp[test,]
 
 predicted.classes <- model1 |> predict(test)
-```
-
-```{r}
 mean(predicted.classes == test$RISK, na.rm = T)
 ```
+
+
 
