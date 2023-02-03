@@ -1,0 +1,97 @@
+---
+title: "Task 2 Part 1"
+author: "Group 4"
+format: pdf
+editor: visual
+---
+
+# Task 1: Jerry and Bingcheng will finish the rest
+
+# 
+
+# Task 2: Part 1: Fitting model to classify risk level of the nodes
+
+```{r}
+#| message: false
+#install.packages("tidyverse")
+library(tidyverse)
+```
+
+Let's first read in data
+
+```{r}
+dp <- read_csv('/Users/haochensong/Desktop/IMI competition/UofT_nodes.csv', show_col_types = FALSE)
+head(dp)
+
+```
+
+```{r}
+occ_risk <- read_csv('/Users/haochensong/Desktop/IMI competition/UofT_occupation_risk.csv', show_col_types = FALSE)
+head(occ_risk)
+```
+match the occupation number with its risk level:
+
+```{r}
+dp <- left_join(dp, occ_risk, by = c("OCPTN_NM" = "code"), na.rm = TRUE)
+```
+
+```{r}
+head(dp)
+```
+
+now we will do some dtype convert:
+
+```{r}
+dp <- dp |>
+  mutate(RES_CNTRY_CA = as.factor(RES_CNTRY_CA),
+         CNTRY_OF_INCOME_CA = as.factor(CNTRY_OF_INCOME_CA),
+         PEP_FL = as.factor(PEP_FL),
+         COUNTRY_RISK_INCOME = as.factor(COUNTRY_RISK_INCOME),
+         COUNTRY_RISK_RESIDENCY = as.factor(COUNTRY_RISK_RESIDENCY),
+         RISK = as.factor(RISK),
+         GENDER = as.factor(GENDER),
+         occupation_risk = as.factor(occupation_risk),
+         )
+
+head(dp)
+```
+ToDo: Now we want to convert birthdate to age, and cust_add_dt to num_years_with_bank
+
+```{r}
+#install.packages("eeptools") 
+library("eeptools") 
+today <- Sys.Date()
+da <- dp[1:10] |>
+  mutate(age = age_calc(BIRTH_DT,Sys.Date(), units = "years"))
+
+age_calc(dp['BIRTH_DT'][1,],today, units = "years")
+```
+and we can run a first test model
+```{r}
+library("nnet")
+model1 <-multinom(RISK~OCPTN_NM + 
+               RES_CNTRY_CA + 
+               CNTRY_OF_INCOME_CA + 
+               PEP_FL+CASH_SUM_IN + 
+               CASH_SUM_OUT +
+               CASH_CNT_OUT +
+               WIRES_SUM_IN +
+               WIRES_CNT_IN +
+               WIRES_SUM_OUT +
+               COUNTRY_RISK_INCOME+
+               COUNTRY_RISK_RESIDENCY, data = dp)
+summary(model1)
+```
+
+do a quick test accuracy test:
+```{r}
+test <- sample(c(TRUE,FALSE), nrow(dp),rep=TRUE) 
+test <- dp[test,]
+
+predicted.classes <- model1 |> predict(test)
+```
+
+```{r}
+mean(predicted.classes == test$RISK, na.rm = T)
+```
+
